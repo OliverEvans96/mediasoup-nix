@@ -1,0 +1,26 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index dbf2774..2af40de 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -279,7 +279,7 @@ dependencies = [
+  "hash_hasher",
+  "log",
+  "lru",
+- "mediasoup-sys 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
++ "mediasoup-sys 0.5.1",
+  "nohash-hasher",
+  "once_cell",
+  "parking_lot 0.12.1",
+@@ -303,12 +303,6 @@ dependencies = [
+ name = "mediasoup-sys"
+ version = "0.5.1"
+ 
+-[[package]]
+-name = "mediasoup-sys"
+-version = "0.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d692b8c851e91f0838772fbcff034bb1a9410bb92c644284cd5694ba62de973d"
+-
+ [[package]]
+ name = "memchr"
+ version = "2.5.0"
