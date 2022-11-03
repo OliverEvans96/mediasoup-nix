@@ -21,10 +21,7 @@
           };
 
           phases = "unpackPhase patchPhase installPhase";
-          patches = [
-            ./mediasoup-sys.patch
-            # wrap-files.openssl.wrap-patch
-          ];
+          patches = [ ./mediasoup-sys.patch ];
           installPhase = "cp -r . $out";
         };
         built-mediasoup-worker = pkgs.stdenv.mkDerivation {
@@ -38,21 +35,8 @@
           nativeBuildInputs = with pkgs; [ meson openssl ];
         };
 
-        # simpleTransform = name: buildPhase: src:
-        #   pkgs.stdenv.mkDerivation {
-        #     inherit name src buildPhase;
-        #     phases = "buildPhase";
-        #   };
-
-        # substitute = subs:
-        #   simpleTransform "substitute-drv" "substitute $src $out ${subs}";
-
         mkSubstituteCmd = file: pre: post: ''
-          echo pwd: $PWD
-          echo substituteInPlace "${file}" --replace "${pre}" "${post}"
           substituteInPlace "${file}" --replace "${pre}" "${post}"
-          cat ${file}
-          echo
         '';
 
         wraps = [{
@@ -78,10 +62,6 @@
             installPhase = "cp -r . $out";
           };
 
-        # log = msg: e:
-        #   pkgs.lib.traceVal
-        #   ("${msg} (${builtins.typeOf e}): ${builtins.toJSON e}");
-
         mkWrapPatchPhase = wraps:
           let
             getFilename = wrapName: "worker/subprojects/${wrapName}.wrap";
@@ -97,34 +77,6 @@
 
         mediasoup-wrap-patched =
           patchDerivation patched-mediasoup (mkWrapPatchPhase wraps);
-
-        # mkWrapFilePatch = { source, patch }:
-        #   let
-        #     sourceFile = pkgs.fetchurl source;
-        #     patchFile = pkgs.fetchurl patch;
-        #   in pkgs.writeText "openssl-wrap.patch" ''
-        #     diff --git a/worker/subprojects/openssl.wrap b/worker/subprojects/openssl.wrap
-        #     index 274b544c..5cc400ae 100644
-        #     --- a/worker/subprojects/openssl.wrap
-        #     +++ b/worker/subprojects/openssl.wrap
-        #     @@ -3 +3 @@ directory = openssl-3.0.2
-        #     -source_url = https://www.openssl.org/source/openssl-3.0.2.tar.gz
-        #     +source_url = file://${sourceFile}
-        #     @@ -7 +7 @@ patch_filename = openssl_3.0.2-1_patch.zip
-        #     -patch_url = https://wrapdb.mesonbuild.com/v2/openssl_3.0.2-1/get_patch
-        #     +patch_url = file://${patchFile}
-        #   '';
-
-        # openssl-patch = mkWrapFilePatch {
-        #   source = {
-        #     url = "https://www.openssl.org/source/openssl-3.0.2.tar.gz";
-        #     sha256 = "sha256-mOkczq1NR1auPJzeXgkZGo5YbZ9NUIOOfsCdZBHf22M=";
-        #   };
-        #   patch = {
-        #     url = "https://wrapdb.mesonbuild.com/v2/openssl_3.0.2-1/get_patch";
-        #     sha256 = "sha256-diq06pTQIXjWodPrY0CcLE1hMV01g5HNrGLfFSERdNQ=";
-        #   };
-        # };
 
         patched-cargo-lock = pkgs.stdenv.mkDerivation {
           name = "patched-cargo-lock";
@@ -148,39 +100,12 @@
           installPhase = "cp -r . $out";
         };
 
-        # wrap-files = {
-        #   openssl = rec {
-        #     source = pkgs.fetchurl {
-        #       url = "https://www.openssl.org/source/openssl-3.0.2.tar.gz";
-        #       sha256 = "sha256-mOkczq1NR1auPJzeXgkZGo5YbZ9NUIOOfsCdZBHf22M=";
-        #     };
-        #     patch = pkgs.fetchurl {
-        #       url =
-        #         "https://wrapdb.mesonbuild.com/v2/openssl_3.0.2-1/get_patch";
-        #       sha256 = "sha256-diq06pTQIXjWodPrY0CcLE1hMV01g5HNrGLfFSERdNQ=";
-        #     };
-        #     wrap-patch = pkgs.writeText "openssl-wrap.patch" ''
-        #       diff --git a/worker/subprojects/openssl.wrap b/worker/subprojects/openssl.wrap
-        #       index 274b544c..5cc400ae 100644
-        #       --- a/worker/subprojects/openssl.wrap
-        #       +++ b/worker/subprojects/openssl.wrap
-        #       @@ -3 +3 @@ directory = openssl-3.0.2
-        #       -source_url = https://www.openssl.org/source/openssl-3.0.2.tar.gz
-        #       +source_url = file://${source}
-        #       @@ -7 +7 @@ patch_filename = openssl_3.0.2-1_patch.zip
-        #       -patch_url = https://wrapdb.mesonbuild.com/v2/openssl_3.0.2-1/get_patch
-        #       +patch_url = file://${patch}
-        #     '';
-        #   };
-        # };
-
       in {
 
         packages.mediasoup = patched-mediasoup;
         packages.built-worker = built-mediasoup-worker;
         packages.cargoLock = patched-cargo-lock;
         packages.src = patched-src;
-        # packages.wrap-patches = pkgs.writeText "out.txt" (mkPatchPhase wraps);
         packages.patched = mediasoup-wrap-patched;
 
         defaultPackage = rustPlatform.buildRustPackage {
